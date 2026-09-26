@@ -18,12 +18,12 @@ A portfolio project combining adversarial machine learning, cloud infrastructure
 
 The adversarially trained model retains substantially more accuracy under attack, at a small cost to clean accuracy.
 
-## Architecture┌─────────────┐ ┌──────────────────┐ ┌─────────────────┐
-│ train.py │─────▶│ LocalStack (S3 + │◀────▶│ FastAPI (api.py)│
-│ (ART, PGD) │ │ Secrets Manager) │ │ JWT / rate-limit │
-└─────────────┘ └──────────────────┘ └─────────────────┘
-│
-curl / Swagger UI
+## Architecture
+
+- **train.py** trains a standard CNN and a PGD-adversarially-trained CNN using ART, then saves both models and metrics.
+- **bootstrap_aws.py** uploads the models and stores JWT/user secrets in **LocalStack** (emulating S3 + Secrets Manager).
+- **api.py** (FastAPI) loads the models and secrets from LocalStack at startup, and serves predictions behind JWT auth and rate limiting.
+- Clients hit the API via `curl` or the Swagger UI at `/docs`.
 
 ## Tech stack
 
