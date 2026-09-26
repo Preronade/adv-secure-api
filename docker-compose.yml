@@ -1,0 +1,7 @@
+services:
+  localstack:
+    image: localstack/localstack
+    ports: ["127.0.0.1:4566:4566"]
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+      - SERVICES=s3,secretsmanager

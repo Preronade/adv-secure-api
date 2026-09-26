@@ -1,0 +1,29 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+env:
+  AWS_DEFAULT_REGION: us-east-1
+jobs:
+  secure-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r requirements.txt bandit pip-audit pytest httpx
+      - run: bandit -r src -ll
+      - run: pip-audit -r requirements.txt
+      - run: pytest -q
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: docker build -t adv-api .
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: adv-api
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
